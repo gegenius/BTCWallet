@@ -51,13 +51,13 @@ class OPERATIONS():
 
 
     def createwallet(self, name):
-            print(Fore.GREEN + "[*] Creating wallet...")
-        #try:
+        print(Fore.GREEN + "[*] Creating wallet...")
+        try:
             wal = P()
             print(Fore.GREEN + "[*] Extracting and saving keys...")
             addr = wal.address
             key = wal.to_wif()
-            i = input("[*] Impostare password: ")
+            i = input(Fore.GREEN + "[*] Impostare password: ")
             print(Fore.GREEN + "[*] Writing data...")
             file = open('.\\database\\' + name, "w+")
             file.write(addr + "\n" + Fernet(make_password(i.encode(), solt=b'\xef\xd3\xd5\x85\\V\xc7\xd2\xbe\xd89~K\xef8d')).encrypt(key.encode()).decode())
@@ -68,7 +68,7 @@ address........:{Fore.BLUE} {addr}
 {Fore.GREEN}wif............:{Fore.BLUE} {key}
 {Fore.GREEN}
 ####################################""")
-        #except:
+        except:
             print(Fore.RED + "[ERR] Impossibile generare il wallet bitcoin...")
 
 
