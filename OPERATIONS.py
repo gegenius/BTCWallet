@@ -3,6 +3,7 @@ import delle librerie principali
 """
 
 import os
+import sys
 from decimal import Decimal
 from colorama import Fore
 import base64
@@ -23,12 +24,23 @@ import librerie per interagire con la blockchain
 from bit import PrivateKeyTestnet as P
 from bit.base32 import encode
 from bit.crypto import ripemd160_sha256
+from bit.network import NetworkAPI
 from blockcypher import get_address_overview as INFO
 from blockcypher import get_transaction_details as T
 
-
+NETAPI = None
 
 class GET():
+    def trueorfalse(self, errmess, entrymess):
+        while True:
+            i = input(entrymess)
+            if i == "y":
+                return True
+            elif i == "n":
+                return False
+            else:
+                print(errmess)
+
     def make_password(self, password, solt):
         """
         :param password: byte of password
@@ -54,13 +66,12 @@ class GET():
         :return addr: string of public address to send bitcoin
         :retutn key: string of wif to access at the wallet
         """
-        wal = None
         try:
             wal = P()
         except:
             key = None
             addr = None
-        if type(wal) != "None":
+        else:
             key = wal.to_wif()
             addr = wal.address
         return key, addr
@@ -156,12 +167,11 @@ class PRINT():
         :param addr: string of wallet address
         """
         print(Fore.GREEN + "[*] Richiesta dati...")
-        data = None
         try:
-            data = GET.wallinfo(addr)
+            data = GET.wallinfo(self, addr)
         except:
             print(Fore.RED + "[ERR] Errore nella connessione alla blockchain")
-        if data != None:
+        else:
             print(f"""{Fore.GREEN}########## WALLET INFORMATION ##########
 
 {Fore.GREEN}address....................: {Fore.BLUE}{encode('bc', 0, ripemd160_sha256(self.CurrentWallet.public_key))}
@@ -260,3 +270,78 @@ address........:{Fore.BLUE} {addr}
                     print(Fore.RED + "[ERR] Errore nell'apertura del wallet")
         else:
             print(Fore.RED + "[ERR] Wallet inesistente")
+
+
+class setnode():
+
+    def main(self):
+        os.system("cls")
+        setconf = GET.trueorfalse(self, Fore.YELLOW + "[WARN] Valore non valido (y/n)", Fore.GREEN + "[*] Importare file di configurazione? (y/n)")
+        if setconf == False:
+            data = self.setnodemanual()
+            saveconf = GET.trueorfalse(self, Fore.YELLOW + "[WARN] Valore non valido (y/n)", Fore.GREEN + "[*] Salvare configurazione in un file? (y/n)")
+            if saveconf == True:
+                self.saveconf(data)
+        else:
+            name = input(Fore.GREEN + "[*] Inserire il path del file: ")
+            self.setnodefromfile(name)
+
+    def setnodemanual(self):
+        global NETAPI
+        print(Fore.GREEN + "[*] CONFIGURING NODE CONNECTION")
+        host = input(Fore.GREEN + "[*] Host address (IPv4): ")
+        while True:
+            port = input(Fore.GREEN + "[*] Port: ")
+            try:
+                port = int(port)
+            except:
+                print(Fore.YELLOW + "[WARN] Valore non valido")
+            else:
+                if port > 65535:
+                    print(Fore.YELLOW + "[WARN] Valore non valido")
+                else:
+                    break
+        user = input(Fore.GREEN + "[*] Username: ")
+        password = input(Fore.GREEN + "[*] Password: ")
+        use_https = GET.trueorfalse(self, Fore.YELLOW + "[WARN] Valore non valido (y/n)", Fore.GREEN + "[*] HTTPS (y/n): ")
+        try:
+            NETAPI = NetworkAPI()
+            NETAPI.connect_to_node(host=host, port=port, user=user, password=password, use_https=use_https, testnet=False)
+            NETAPI.get_transaction_by_id("f2c94af86d00d0c87a391c4e3cb783431a737315bf23c2c7531238eec6e81032")
+        except:
+            print(Fore.RED + "[ERR] Impossibile connettersi al nodo")
+            exit()
+        else:
+            print(Fore.GREEN + "[*] BITCOIN IMPOSTATO CON SUCCESSO")
+            return {'password': password, 'username': user, 'host': host, 'port': port,'use_https': use_https}
+
+
+    def saveconf(self, data):
+        content = f"{data['password']}\n{data['username']}\n{data['host']}\n{str(data['port'])}\n{str(data['https'])}".encode()
+        file = open(data['host'] + ".node", "wb+")
+        file.write(content)
+        file.close()
+        print(Fore.GREEN + "[*] Configurazione salvata con successo nel file '" + data['host'] + ".node'...")
+
+    def setnodefromfile(self, path):
+        try:
+            file = open(path, "rb")
+        except:
+            print(Fore.RED + "[ERR] Impossibile trovare il file")
+        else:
+            data = file.read().decode().split("\n")
+            file.close()
+            if len(data) != 4:
+                if data[4] == str(True):
+                    data[4] = True
+                else:
+                    data[4] = False
+                try:
+                    NetworkAPI.connect_to_node(password=data[0], user=data[1], host=data[2], port=int(data[3]), use_https=data[4], testnet=False)
+                except:
+                    print(Fore.RED + "[ERR] Impossibile connettersi al nodo")
+                    sys.exit()
+                else:
+                    print(Fore.GREEN + "[*] BITCOIN IMPOSTATO CON SUCCESSO")
+            else:
+                print(Fore.RED + "[ERR] File malformato")

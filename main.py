@@ -1,5 +1,4 @@
 from OPERATIONS import *
-import sys
 import colorama
 
 colorama.init(autoreset=True)
@@ -48,6 +47,8 @@ class MAIN():
                     else:
                         print(Fore.RED + "[ERR] Parametri errati")
 
+                elif comand[1] == "delate":
+                    oprint.delwallet(self, comand[2])
                 elif comand[1] == "create":
                     oprint.createwallet(self, comand[2])
                 elif comand[1] == "set":
@@ -84,17 +85,20 @@ class MAIN():
                 print(Fore.RED + "[ERR] Parametri errati")
 
         elif comand[0] == "exit":
+            os.system("cls")
             sys.exit()
 
         else:
             print(Fore.RED + "[ERR] Comando non trovato")
 
 Main = MAIN()
+SETNODE = setnode()
 
 def shell():
+    os.system("cls")
     print(BANNER)
     while True:
-        i = input(Fore.LIGHTBLACK_EX + ".>")
+        i = input(Fore.LIGHTBLACK_EX + ".>" + Fore.RESET)
         Main.execute(i)
 
 def comline():
@@ -112,7 +116,11 @@ def comline():
     if status == True:
         Main.execute(" ".join(comand))
 
+
 if len(sys.argv) == 1:
+    shell()
+elif len(sys.argv) == 2 and sys.argv[1] == "privnode":
+    SETNODE.main()
     shell()
 else:
     comline()
