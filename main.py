@@ -28,6 +28,7 @@ class MAIN():
     def __init__(self):
         self.CurrentWallet = None
         self.name = None
+
     def execute(self, comand):
         comand = comand.split(" ")
 
@@ -105,10 +106,11 @@ def comline():
     status = True
     comand = sys.argv
     comand.pop(0)
+    comand.pop(0)
     if not ("wallet" in comand and "show" in comand and "list" in comand) and not ("wallet" in comand and "create" in comand):
         wal = comand[0]
         comand.pop(0)
-        if wal in os.listdir(".\\database\\"):
+        if get.is_wallet(None, wal):
             Main.execute("wallet set " + wal)
         else:
             print(Fore.RED + "[ERR] Wallet inesistente")
@@ -116,11 +118,21 @@ def comline():
     if status == True:
         Main.execute(" ".join(comand))
 
+def chdir(dir):
+    try:
+        os.chdir(dir)
+    except:
+        print(Fore.RED + "[ERR] Impossibile trovare la directory specificata")
+        sys.exit()
 
-if len(sys.argv) == 1:
+if len(sys.argv) == 2:
+    chdir(sys.argv[1])
     shell()
-elif len(sys.argv) == 2 and sys.argv[1] == "privnode":
+elif len(sys.argv) == 3 and sys.argv[2] == "privnode":
     SETNODE.main()
+    chdir(sys.argv[1])
     shell()
-else:
+elif len(sys.argv) > 2:
+    chdir(sys.argv[1])
     comline()
+else: print(Fore.RED + "[ERR] PARAMETRI ERRATI")

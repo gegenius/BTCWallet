@@ -80,7 +80,12 @@ class GET():
         """
         :return: list with wallets names
         """
-        return os.listdir(".\\database\\")
+        data = os.listdir(".\\")
+        out = []
+        for x in data:
+            if "wal" == x.split(".")[-1]:
+                out.append(x)
+        return out
 
     def is_wallet(self, wallet):
         """
@@ -127,7 +132,7 @@ class GET():
         :return: string of addr and string of wif key
         """
         if GET.is_wallet(self, name):
-            file = open(".\\database\\" + name, "r")
+            file = open(".\\" + name, "r")
             data = file.read()
             file.close()
             data = data.split("\n")
@@ -172,7 +177,8 @@ class PRINT():
         except:
             print(Fore.RED + "[ERR] Errore nella connessione alla blockchain")
         else:
-            print(f"""{Fore.GREEN}########## WALLET INFORMATION ##########
+            if data != 0:
+                print(f"""{Fore.GREEN}########## WALLET INFORMATION ##########
 
 {Fore.GREEN}address....................: {Fore.BLUE}{encode('bc', 0, ripemd160_sha256(self.CurrentWallet.public_key))}
 {Fore.GREEN}credit.....................: {Fore.BLUE}{Decimal(str(data['balance'] / 100000000))} BTC
@@ -181,6 +187,8 @@ class PRINT():
 {Fore.GREEN}total sent.................: {Fore.BLUE}{Decimal(str(data['total_sent'] / 100000000))} BTC
 {Fore.GREEN}
 #######################################""")
+            else:
+                print(Fore.RED + "[ERR] Errore nella connessione alla blockchain")
 
     def createwallet(self, name):
         """
@@ -193,7 +201,7 @@ class PRINT():
             i = input(Fore.GREEN + "[*] Impostare password: ")
             print(Fore.GREEN + "[*] Writing data...")
             if not GET.is_wallet(self, name):
-                file = open('.\\database\\' + name, "w+")
+                file = open('.\\' + name, "w+")
                 file.write(addr + "\n" + Fernet(GET.make_password(self, i.encode(), solt=b'\xef\xd3\xd5\x85\\V\xc7\xd2\xbe\xd89~K\xef8d')).encrypt(key.encode()).decode())
                 file.close()
                 print(Fore.GREEN + "###### OPERAZIONE COMOPLETATA ######")
