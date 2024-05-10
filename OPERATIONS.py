@@ -7,6 +7,7 @@ import sys
 from decimal import Decimal
 from colorama import Fore
 import base64
+from pwinput import pwinput
 
 """
 import delle librerie della criptografia
@@ -83,8 +84,10 @@ class GET():
         data = os.listdir(".\\")
         out = []
         for x in data:
-            if "wal" == x.split(".")[-1]:
-                out.append(x)
+            y = x.split(".")
+            if "wal" == y[-1]:
+                y = y[:-1]
+                out.append(".".join(y))
         return out
 
     def is_wallet(self, wallet):
@@ -132,7 +135,7 @@ class GET():
         :return: string of addr and string of wif key
         """
         if GET.is_wallet(self, name):
-            file = open(".\\" + name, "r")
+            file = open(".\\" + name + ".wal", "r")
             data = file.read()
             file.close()
             data = data.split("\n")
@@ -201,7 +204,7 @@ class PRINT():
             i = input(Fore.GREEN + "[*] Impostare password: ")
             print(Fore.GREEN + "[*] Writing data...")
             if not GET.is_wallet(self, name):
-                file = open('.\\' + name, "w+")
+                file = open('.\\' + name + ".wal", "w+")
                 file.write(addr + "\n" + Fernet(GET.make_password(self, i.encode(), solt=b'\xef\xd3\xd5\x85\\V\xc7\xd2\xbe\xd89~K\xef8d')).encrypt(key.encode()).decode())
                 file.close()
                 print(Fore.GREEN + "###### OPERAZIONE COMOPLETATA ######")
@@ -260,7 +263,7 @@ address........:{Fore.BLUE} {addr}
         """
         if GET.is_wallet(self, name):
             while True:
-                i = input(Fore.GREEN + "[*] Inserire password: ")
+                i = pwinput(Fore.GREEN + "[*] Inserire password: ", Fore.BLUE + "*")
                 if i != "exit":
                     addr, key = GET.getwaladdrkey(self, name, GET.make_password(self, i.encode(), b'\xef\xd3\xd5\x85\\V\xc7\xd2\xbe\xd89~K\xef8d'))
                     if key != None:
